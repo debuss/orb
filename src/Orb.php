@@ -7,6 +7,7 @@ use League\Container\{Container, ContainerAwareInterface, ContainerAwareTrait};
 use Orb\Trait\{ContainerDefaultTrait, EmitterTrait, ErrorHandlingTrait, MiddlewareAwareTrait, RoutingTrait};
 use Laminas\Diactoros\Response;
 use Psr\Container\{ContainerExceptionInterface, ContainerInterface, NotFoundExceptionInterface};
+use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
 use Psr\Log\{LoggerAwareTrait, LoggerInterface};
 use Psr\Http\Server\RequestHandlerInterface;
@@ -28,6 +29,7 @@ class Orb implements ContainerAwareInterface, RequestHandlerInterface
 
     private float $time_start;
 
+    /** @var SplStack<MiddlewareInterface> */
     private SplStack $stack;
 
     public function __construct()

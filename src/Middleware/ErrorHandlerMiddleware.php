@@ -19,9 +19,9 @@ readonly class ErrorHandlerMiddleware implements ErrorHandlerMiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         try {
-            set_error_handler(function ($errno, $message, $file, $line) {
+            set_error_handler(function (int $errno, string $message, string $file, int $line): bool {
                 if (!(error_reporting() & $errno)) {
-                    return;
+                    return false;
                 }
 
                 throw new ErrorException($message, 500, $errno, $file, $line);

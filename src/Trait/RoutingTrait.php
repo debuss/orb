@@ -56,6 +56,7 @@ trait RoutingTrait
         $this->match(self::AVAILABLE_METHODS, $path, $handler, $name);
     }
 
+    /** @param string[] $methods */
     public function match(array $methods, string $path, mixed $handler, ?string $name = null): void
     {
         if (!$handler instanceof RequestHandlerInterface) {
