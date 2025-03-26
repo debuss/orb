@@ -9,11 +9,19 @@ use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Monolog\Processor\PsrLogMessageProcessor;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
-trait ContainerDefaultTrait
+trait ContainerAwareTrait
 {
+
+    protected ContainerInterface $container;
+
+    public function setContainer(ContainerInterface $container): void
+    {
+        $this->container = $container;
+    }
 
     private function setDefaultContainer(): void
     {

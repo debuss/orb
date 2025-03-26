@@ -3,8 +3,7 @@
 namespace Orb;
 
 use Borsch\Router\RouterInterface;
-use League\Container\{Container, ContainerAwareInterface, ContainerAwareTrait};
-use Orb\Trait\{ContainerDefaultTrait, EmitterTrait, ErrorHandlingTrait, MiddlewareAwareTrait, RoutingTrait};
+use Orb\Trait\{ContainerAwareTrait, EmitterTrait, ErrorHandlingTrait, MiddlewareAwareTrait, RoutingTrait};
 use Laminas\Diactoros\Response;
 use Psr\Container\{ContainerExceptionInterface, ContainerInterface, NotFoundExceptionInterface};
 use Psr\Http\Server\MiddlewareInterface;
@@ -15,12 +14,11 @@ use RuntimeException;
 use SplStack;
 use Throwable;
 
-class Orb implements ContainerAwareInterface, RequestHandlerInterface
+class Orb implements RequestHandlerInterface
 {
 
     use
         ContainerAwareTrait,
-        ContainerDefaultTrait,
         LoggerAwareTrait,
         RoutingTrait,
         MiddlewareAwareTrait,
