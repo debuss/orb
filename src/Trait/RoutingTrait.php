@@ -75,7 +75,7 @@ trait RoutingTrait
             $handler = new RequestHandler($handler);
         }
 
-        $this->routes[] = new Route($methods, $path, $handler, $name);
+        $this->routes[] = new Route($methods, $this->base_path.$path, $handler, $name);
     }
 
     private function loadRoutes(): void
