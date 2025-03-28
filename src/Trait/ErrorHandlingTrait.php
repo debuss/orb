@@ -2,7 +2,8 @@
 
 namespace Orb\Trait;
 
-use ErrorException;
+
+use Orb\Exception\ErrorException;
 
 trait ErrorHandlingTrait
 {

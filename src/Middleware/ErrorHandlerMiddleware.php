@@ -2,8 +2,8 @@
 
 namespace Orb\Middleware;
 
-use ErrorException;
 use Laminas\Diactoros\Response;
+use Orb\Exception\ErrorException;
 use Psr\Log\LoggerInterface;
 use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
 use Psr\Http\Server\RequestHandlerInterface;
