@@ -6,10 +6,11 @@ use Borsch\Router\RouterInterface;
 use Orb\Trait\{ContainerAwareTrait, EmitterTrait, ErrorHandlingTrait, MiddlewareAwareTrait, RoutingTrait};
 use Laminas\Diactoros\Response;
 use Psr\Container\{ContainerExceptionInterface, ContainerInterface, NotFoundExceptionInterface};
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
+use Psr\Http\{Server\MiddlewareInterface,
+    Message\ResponseInterface,
+    Message\ServerRequestInterface,
+    Server\RequestHandlerInterface};
 use Psr\Log\{LoggerAwareTrait, LoggerInterface};
-use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
 use SplStack;
 use Throwable;
@@ -34,6 +35,8 @@ class Orb implements RequestHandlerInterface
     {
         $this->time_start = microtime(true);
         $this->stack = new SplStack();
+
+        $this->setContainer();
     }
 
     /**
@@ -42,10 +45,6 @@ class Orb implements RequestHandlerInterface
      */
     private function initialize(): void
     {
-        if ($this->container === null) {
-            $this->setDefaultContainer();
-        }
-
         $this->logger = $this->container->get(LoggerInterface::class);
         $this->router = $this->container->get(RouterInterface::class);
 

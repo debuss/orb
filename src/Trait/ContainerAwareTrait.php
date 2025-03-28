@@ -16,14 +16,14 @@ use Psr\Log\LoggerInterface;
 trait ContainerAwareTrait
 {
 
-    protected ContainerInterface $container;
+    protected Container $container;
 
-    public function setContainer(ContainerInterface $container): void
+    public function addContainer(ContainerInterface $container): void
     {
-        $this->container = $container;
+        $this->container->delegate($container);
     }
 
-    private function setDefaultContainer(): void
+    private function setContainer(): void
     {
         $this->container = new Container();
         $this->container->defaultToShared();
