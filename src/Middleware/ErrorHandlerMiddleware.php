@@ -29,8 +29,10 @@ readonly class ErrorHandlerMiddleware implements ErrorHandlerMiddlewareInterface
 
             $response = $handler->handle($request);
         } catch (Throwable $exception) {
-            $this->logger->error($exception->getMessage());
-            $this->logger->error($exception->getTraceAsString());
+            $this->logger->error('{message}. Stacktrace: {stacktrace}', [
+                'message' => $exception->getMessage(),
+                'stacktrace' => $exception->getTraceAsString()
+            ]);
 
             $response = new Response(status: 500);
         }

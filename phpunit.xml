@@ -4,6 +4,7 @@
          bootstrap="vendor/autoload.php"
          colors="true"
 >
+    <coverage/>
     <testsuites>
         <testsuite name="Test Suite">
             <directory suffix="Test.php">./tests</directory>
@@ -11,8 +12,10 @@
     </testsuites>
     <source>
         <include>
-            <directory suffix=".php">./app</directory>
             <directory suffix=".php">./src</directory>
         </include>
     </source>
+    <php>
+        <env name="XDEBUG_MODE" value="coverage"/>
+    </php>
 </phpunit>

@@ -12,7 +12,7 @@ trait RoutingTrait
 
     protected RouterInterface $router;
     /** @var Route[] */
-    protected array $routes;
+    protected array $routes = [];
 
     protected const AVAILABLE_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'];
 

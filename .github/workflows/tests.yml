@@ -42,5 +42,8 @@ jobs:
       - name: Run test suite
         run:  ./vendor/bin/pest
 
+      - name: Run mutation tests
+        run:  ./vendor/bin/pest --mutate --min=70 --covered-only --parallel
+
       - name: PHPStan
         run:  ./vendor/bin/phpstan analyze src --level 6
