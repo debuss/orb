@@ -11,10 +11,22 @@ trait RoutingTrait
 {
 
     protected RouterInterface $router;
+
     /** @var Route[] */
     protected array $routes = [];
 
+    protected string $base_path = '';
+
     protected const AVAILABLE_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'];
+
+    public function group(string $path, callable $callback): void
+    {
+        $this->base_path = $path;
+
+        $callback($this);
+
+        $this->base_path = '';
+    }
 
     public function get(string $uri, mixed $handler, ?string $name = null): void
     {
