@@ -18,31 +18,31 @@ use Psr\Log\LoggerInterface;
 trait ContainerAwareTrait
 {
 
-    protected Container $container;
+    protected ContainerInterface $container;
 
     public function addContainer(ContainerInterface $container): void
     {
-        $this->container->delegate($container);
+//        $this->container->delegate($container);
     }
 
     private function setContainer(): void
     {
-        $this->container = new Container();
-        $this->container->defaultToShared();
-
-        $this->container->add(LoggerInterface::class, function(): LoggerInterface {
-            $stream = new StreamHandler('php://stdout', Level::Debug);
-            $stream->setFormatter(new LineFormatter(dateFormat: 'D M d H:i:s Y', ignoreEmptyContextAndExtra: true));
-            $logger = new Logger('Orb');
-            $logger->pushHandler($stream);
-            $logger->pushProcessor(new PsrLogMessageProcessor('D M d H:i:s Y', true));
-            return $logger;
-        });
-
-        $this->container->add(RouterInterface::class, fn(): FastRouteRouter => new FastRouteRouter());
-
-        $this->container->add(ServerRequestInterface::class, fn(): ServerRequestInterface => ServerRequestFactory::fromGlobals());
-
-        $this->container->delegate(new ReflectionContainer(true));
+//        $this->container = new Container();
+//        $this->container->defaultToShared();
+//
+//        $this->container->add(LoggerInterface::class, function(): LoggerInterface {
+//            $stream = new StreamHandler('php://stdout', Level::Debug);
+//            $stream->setFormatter(new LineFormatter(dateFormat: 'D M d H:i:s Y', ignoreEmptyContextAndExtra: true));
+//            $logger = new Logger('Orb');
+//            $logger->pushHandler($stream);
+//            $logger->pushProcessor(new PsrLogMessageProcessor('D M d H:i:s Y', true));
+//            return $logger;
+//        });
+//
+//        $this->container->add(RouterInterface::class, fn(): FastRouteRouter => new FastRouteRouter());
+//
+//        $this->container->add(ServerRequestInterface::class, fn(): ServerRequestInterface => ServerRequestFactory::fromGlobals());
+//
+//        $this->container->delegate(new ReflectionContainer(true));
     }
 }

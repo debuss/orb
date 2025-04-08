@@ -4,6 +4,7 @@ namespace Orb\Configuration;
 
 use Borsch\Router\Contract\RouterInterface;
 use Borsch\Router\FastRouteRouter;
+use Laminas\Diactoros\ServerRequestFactory;
 use League\Container\Container;
 use League\Container\ReflectionContainer;
 use Monolog\Formatter\LineFormatter;
@@ -11,6 +12,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Monolog\Logger;
 use Monolog\Processor\PsrLogMessageProcessor;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
 class ConfigurationFactory
@@ -37,7 +39,9 @@ class ConfigurationFactory
         $container->defaultToShared();
         $container->add(LoggerInterface::class, fn (): LoggerInterface => $logger);
         $container->add(RouterInterface::class, fn (): RouterInterface => $router);
+        $container->add(ServerRequestInterface::class, fn (): ServerRequestInterface => ServerRequestFactory::fromGlobals())->setShared(false);
         $container->delegate(new ReflectionContainer(true));
+        $config->setContainer($container);
 
         return $config;
     }

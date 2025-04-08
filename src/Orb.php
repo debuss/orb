@@ -4,7 +4,9 @@ namespace Orb;
 
 use Borsch\Router\Contract\RouterInterface;
 use Laminas\Diactoros\Response;
+use League\Container\Container;
 use Orb\Configuration\Configuration;
+use Orb\Configuration\ConfigurationFactory;
 use Orb\Exception\RuntimeException;
 use Orb\Trait\{ContainerAwareTrait, EmitterTrait, ErrorHandlingTrait, MiddlewareAwareTrait, RoutingTrait};
 use Psr\Container\{ContainerExceptionInterface, ContainerInterface, NotFoundExceptionInterface};
@@ -39,7 +41,12 @@ class Orb implements RequestHandlerInterface
         $this->time_start = microtime(true);
         $this->stack = new SplStack();
 
-        $this->setContainer();
+        $configuration ??= ConfigurationFactory::createDefault();
+
+        $this->container = $configuration->getContainer();
+        $this->router = $configuration->getRouter();
+        $this->logger = $configuration->getLogger();
+//        $this->setContainer();
     }
 
     /**
@@ -54,11 +61,11 @@ class Orb implements RequestHandlerInterface
 
         $this->is_initialized = true;
 
-        $this->logger ??= $this->container->get(LoggerInterface::class); // @pest-mutate-ignore
-        $this->router = $this->container->get(RouterInterface::class);
+//        $this->logger ??= $this->container->get(LoggerInterface::class); // @pest-mutate-ignore
+//        $this->router = $this->container->get(RouterInterface::class);
 
-        $this->loadRoutes();
-        $this->loadMiddlewares();
+//        $this->loadRoutes();
+//        $this->loadMiddlewares();
 
         return $server_request->withAttribute(ContainerInterface::class, $this->container);
     }
@@ -87,12 +94,35 @@ class Orb implements RequestHandlerInterface
         try {
             set_error_handler([$this, 'handleError']);
 
-            $response = $this->handle(
-                $server_request ?? $this->container->get(ServerRequestInterface::class)
-            );
+            $server_request ??= $this->container->get(ServerRequestInterface::class);
+            $server_request = $server_request->withAttribute(ContainerInterface::class, $this->container);
+
+            $this->logger->debug('Request starting HTTP/{protocol} {method} {uri}', [
+                'protocol' => $server_request->getProtocolVersion(),
+                'method' => $server_request->getMethod(),
+                'uri' => $server_request->getUri()
+            ]);
+
+            $route_result = $this->router->match($server_request);
+            $route = $route_result->getMatchedRoute();
+
+            if (!$route) {
+                $this->logger->warning('Request URI does not exist');
+                $response = new Response(status: 404); // TODO in configuration/container ?
+            } elseif (!in_array($server_request->getMethod(), $route->getAllowedMethods())) {
+                $this->logger->warning('Method "{method}" not allowed for "{uri}", expected: {allowed}', [
+                    'method' => $server_request->getMethod(),
+                    'uri' => $server_request->getUri(),
+                    'allowed' => $route->getAllowedMethods()
+                ]);
+                $response = new Response(status: 405, headers: ['Allow' => $route->getAllowedMethods()]); // TODO in configuration/container ?
+            } else {
+                $this->logger->debug('Executing endpoint "{name}"', ['name' => $route->getName()]);
+                $response = $route->getHandler()->handle($server_request);
+            }
         } catch (Throwable $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
-            $response = new Response(status: 500);
+            $response = new Response(status: 500); // TODO in configuration/container ?
         }
 
         restore_error_handler();

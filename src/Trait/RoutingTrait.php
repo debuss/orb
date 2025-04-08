@@ -21,7 +21,7 @@ trait RoutingTrait
 
     public function group(string $path, callable $callback): void
     {
-        $this->base_path = $path;
+        $this->base_path .= $path;
 
         $callback($this);
 
@@ -75,13 +75,13 @@ trait RoutingTrait
             $handler = new RequestHandler($handler);
         }
 
-        $this->routes[] = new Route($methods, $this->base_path.$path, $handler, $name);
+        $this->router->addRoute(new Route($methods, $this->base_path.$path, $handler, $name));
     }
 
-    private function loadRoutes(): void
-    {
-        foreach ($this->routes as $route) {
-            $this->router->addRoute($route);
-        }
-    }
+//    private function loadRoutes(): void
+//    {
+//        foreach ($this->routes as $route) {
+//            $this->router->addRoute($route);
+//        }
+//    }
 }
