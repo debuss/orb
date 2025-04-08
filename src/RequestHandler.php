@@ -2,7 +2,7 @@
 
 namespace Orb;
 
-use Borsch\Router\RouteResultInterface;
+use Borsch\Router\Contract\RouteResultInterface;
 use DOMDocument;
 use Laminas\Diactoros\Response\{HtmlResponse, JsonResponse, XmlResponse};
 use Psr\Http\{Message\ResponseInterface, Message\ServerRequestInterface, Server\RequestHandlerInterface};
@@ -48,7 +48,7 @@ class RequestHandler implements RequestHandlerInterface
              $this->handler = call_user_func_array($this->handler, $params);
         }
 
-        return match(true) {
+        return match(true) { // @pest-mutate-ignore
             $this->handler instanceof SimpleXMLElement || $this->handler instanceof DOMDocument => new XmlResponse($this->handler->saveXML()),
             is_array($this->handler) || is_object($this->handler) => new JsonResponse($this->handler),
             default => new HtmlResponse((string)$this->handler)

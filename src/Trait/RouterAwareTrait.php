@@ -3,25 +3,27 @@
 namespace Orb\Trait;
 
 use Borsch\Router\Route;
-use Borsch\Router\RouterInterface;
+use Borsch\Router\Contract\RouterInterface;
 use Orb\RequestHandler;
 use Psr\Http\Server\RequestHandlerInterface;
 
-trait RoutingTrait
+trait RouterAwareTrait
 {
 
     protected RouterInterface $router;
-
-    /** @var Route[] */
-    protected array $routes = [];
 
     protected string $base_path = '';
 
     protected const AVAILABLE_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'];
 
+    public function setRouter(RouterInterface $router): void
+    {
+        $this->router = $router;
+    }
+
     public function group(string $path, callable $callback): void
     {
-        $this->base_path = $path;
+        $this->base_path .= $path;
 
         $callback($this);
 
@@ -75,13 +77,6 @@ trait RoutingTrait
             $handler = new RequestHandler($handler);
         }
 
-        $this->routes[] = new Route($methods, $this->base_path.$path, $handler, $name);
-    }
-
-    private function loadRoutes(): void
-    {
-        foreach ($this->routes as $route) {
-            $this->router->addRoute($route);
-        }
+        $this->router->addRoute(new Route($methods, $this->base_path.$path, $handler, $name));
     }
 }

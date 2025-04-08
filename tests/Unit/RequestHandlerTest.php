@@ -65,6 +65,18 @@ test('handles XML data as XML response', function () {
         ->and((string)$response->getBody())->toContain('<root><item>value</item></root>');
 });
 
+test('handles DOMDocument data as XML response', function () {
+    $dom = new DOMDocument();
+    $dom->loadXML('<root><item>value</item></root>');
+    $handler = new RequestHandler($dom);
+
+    $response = $handler->handle(new ServerRequest());
+
+    expect($response)
+        ->toBeInstanceOf(XmlResponse::class)
+        ->and((string)$response->getBody())->toContain('<root><item>value</item></root>');
+});
+
 test('handles callable with class method syntax', function () {
     $container = new Container();
     $container->delegate(new ReflectionContainer(true));

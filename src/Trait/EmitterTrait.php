@@ -35,7 +35,5 @@ trait EmitterTrait
         }
 
         $this->logger->debug('Executed in {time} seconds', ['time' => microtime(true) - $this->time_start]);
-
-        exit(1);
     }
 }
