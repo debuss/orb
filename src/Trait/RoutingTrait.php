@@ -3,7 +3,7 @@
 namespace Orb\Trait;
 
 use Borsch\Router\Route;
-use Borsch\Router\RouterInterface;
+use Borsch\Router\Contract\RouterInterface;
 use Orb\RequestHandler;
 use Psr\Http\Server\RequestHandlerInterface;
 

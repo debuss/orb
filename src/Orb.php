@@ -2,7 +2,7 @@
 
 namespace Orb;
 
-use Borsch\Router\RouterInterface;
+use Borsch\Router\Contract\RouterInterface;
 use Orb\Trait\{ContainerAwareTrait, EmitterTrait, ErrorHandlingTrait, MiddlewareAwareTrait, RoutingTrait};
 use Laminas\Diactoros\Response;
 use Psr\Container\{ContainerExceptionInterface, ContainerInterface, NotFoundExceptionInterface};

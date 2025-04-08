@@ -2,7 +2,7 @@
 
 namespace Orb\Middleware;
 
-use Borsch\Router\RouteResultInterface;
+use Borsch\Router\Contract\RouteResultInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
 use Psr\Http\Server\RequestHandlerInterface;

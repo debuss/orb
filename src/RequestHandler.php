@@ -2,7 +2,7 @@
 
 namespace Orb;
 
-use Borsch\Router\RouteResultInterface;
+use Borsch\Router\Contract\RouteResultInterface;
 use DOMDocument;
 use Laminas\Diactoros\Response\{HtmlResponse, JsonResponse, XmlResponse};
 use Psr\Http\{Message\ResponseInterface, Message\ServerRequestInterface, Server\RequestHandlerInterface};
