@@ -23,6 +23,7 @@ class Orb implements RequestHandlerInterface
         ErrorHandlingTrait;
 
     private float $time_start;
+    private Configuration $configuration;
 
     public function __construct(?Configuration $configuration = null)
     {
@@ -33,6 +34,8 @@ class Orb implements RequestHandlerInterface
         $this->container = $configuration->getContainer();
         $this->router = $configuration->getRouter();
         $this->logger = $configuration->getLogger();
+
+        $this->configuration = $configuration;
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -45,13 +48,17 @@ class Orb implements RequestHandlerInterface
                 'uri' => $request->getUri(), // @pest-mutate-ignore
                 'allowed' => implode(', ', $route_result->getAllowedMethods()) // @pest-mutate-ignore
             ]);
-            $response = new Response(status: 405, headers: ['Allow' => $route_result->getAllowedMethods()]); // TODO in configuration/container ?
+
+            $response = $this->configuration->getMethodNotAllowedResponse()->withHeader('Allow', $route_result->getAllowedMethods());
         } elseif ($route_result->isFailure()) {
             $this->logger->warning('Request URI does not exist'); // @pest-mutate-ignore
-            $response = new Response(status: 404); // TODO in configuration/container ?
+
+            $response = $this->configuration->getNotFoundResponse();
         } else {
             $route = $route_result->getMatchedRoute();
+
             $this->logger->debug('Executing endpoint "{name}"', ['name' => $route->getName()]); // @pest-mutate-ignore
+
             $response = $route->getHandler()->handle($request);
         }
 
@@ -75,7 +82,7 @@ class Orb implements RequestHandlerInterface
             $response = $this->handle($server_request);
         } catch (Throwable $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]); // @pest-mutate-ignore
-            $response = new Response(status: 500); // TODO in configuration/container ?
+            $response = $this->configuration->getInternalServerErrorResponse();
         }
 
         restore_error_handler();

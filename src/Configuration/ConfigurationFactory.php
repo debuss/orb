@@ -4,9 +4,9 @@ namespace Orb\Configuration;
 
 use Borsch\Router\Contract\RouterInterface;
 use Borsch\Router\FastRouteRouter;
+use Laminas\Diactoros\Response\EmptyResponse;
 use Laminas\Diactoros\ServerRequestFactory;
-use League\Container\Container;
-use League\Container\ReflectionContainer;
+use League\Container\{Container, ReflectionContainer};
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Level;
@@ -42,6 +42,11 @@ class ConfigurationFactory
         $container->add(ServerRequestInterface::class, fn (): ServerRequestInterface => ServerRequestFactory::fromGlobals())->setShared(false);
         $container->delegate(new ReflectionContainer(true));
         $config->setContainer($container);
+
+        // Responses
+        $config->setMethodNotAllowedResponse(new EmptyResponse(405));
+        $config->setNotFoundResponse(new EmptyResponse(404));
+        $config->setInternalServerErrorResponse(new EmptyResponse(500));
 
         return $config;
     }
