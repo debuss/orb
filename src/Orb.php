@@ -3,13 +3,14 @@
 namespace Orb;
 
 use Borsch\Router\Contract\RouterInterface;
-use Orb\Trait\{ContainerAwareTrait, EmitterTrait, ErrorHandlingTrait, MiddlewareAwareTrait, RoutingTrait};
 use Laminas\Diactoros\Response;
-use Psr\Container\{ContainerExceptionInterface, ContainerInterface, NotFoundExceptionInterface};
+use Orb\Configuration\Configuration;
 use Orb\Exception\RuntimeException;
-use Psr\Http\{Server\MiddlewareInterface,
-    Message\ResponseInterface,
+use Orb\Trait\{ContainerAwareTrait, EmitterTrait, ErrorHandlingTrait, MiddlewareAwareTrait, RoutingTrait};
+use Psr\Container\{ContainerExceptionInterface, ContainerInterface, NotFoundExceptionInterface};
+use Psr\Http\{Message\ResponseInterface,
     Message\ServerRequestInterface,
+    Server\MiddlewareInterface,
     Server\RequestHandlerInterface};
 use Psr\Log\{LoggerAwareTrait, LoggerInterface};
 use SplStack;
@@ -33,7 +34,7 @@ class Orb implements RequestHandlerInterface
 
     private bool $is_initialized = false;
 
-    public function __construct()
+    public function __construct(?Configuration $configuration = null)
     {
         $this->time_start = microtime(true);
         $this->stack = new SplStack();
