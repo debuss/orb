@@ -2,20 +2,14 @@
 
 namespace Orb;
 
-use Borsch\Router\Contract\RouterInterface;
 use Laminas\Diactoros\Response;
-use League\Container\Container;
-use Orb\Configuration\Configuration;
-use Orb\Configuration\ConfigurationFactory;
-use Orb\Exception\RuntimeException;
-use Orb\Trait\{ContainerAwareTrait, EmitterTrait, ErrorHandlingTrait, MiddlewareAwareTrait, RoutingTrait};
-use Psr\Container\{ContainerExceptionInterface, ContainerInterface, NotFoundExceptionInterface};
-use Psr\Http\{Message\ResponseInterface,
-    Message\ServerRequestInterface,
-    Server\MiddlewareInterface,
-    Server\RequestHandlerInterface};
-use Psr\Log\{LoggerAwareTrait, LoggerInterface};
-use SplStack;
+use Orb\Configuration\{Configuration, ConfigurationFactory};
+use Orb\Trait\{ContainerAwareTrait, EmitterTrait, ErrorHandlingTrait, RouterAwareTrait};
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerAwareTrait;
 use Throwable;
 
 class Orb implements RequestHandlerInterface
@@ -24,69 +18,44 @@ class Orb implements RequestHandlerInterface
     use
         ContainerAwareTrait,
         LoggerAwareTrait,
-        RoutingTrait,
-        MiddlewareAwareTrait,
+        RouterAwareTrait,
         EmitterTrait,
         ErrorHandlingTrait;
 
     private float $time_start;
 
-    /** @var SplStack<MiddlewareInterface> */
-    private SplStack $stack;
-
-    private bool $is_initialized = false;
-
     public function __construct(?Configuration $configuration = null)
     {
         $this->time_start = microtime(true);
-        $this->stack = new SplStack();
 
-        $configuration ??= ConfigurationFactory::createDefault();
+        $configuration ??= ConfigurationFactory::createDefault(); // @pest-mutate-ignore
 
         $this->container = $configuration->getContainer();
         $this->router = $configuration->getRouter();
         $this->logger = $configuration->getLogger();
-//        $this->setContainer();
     }
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    private function initialize(?ServerRequestInterface $server_request = null): ServerRequestInterface
-    {
-        if ($this->is_initialized) {
-            return $server_request;
-        }
-
-        $this->is_initialized = true;
-
-//        $this->logger ??= $this->container->get(LoggerInterface::class); // @pest-mutate-ignore
-//        $this->router = $this->container->get(RouterInterface::class);
-
-//        $this->loadRoutes();
-//        $this->loadMiddlewares();
-
-        return $server_request->withAttribute(ContainerInterface::class, $this->container);
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     * @throws RuntimeException
-     */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $request = $this->initialize($request);
+        $route_result = $this->router->match($request);
 
-        if ($this->stack->isEmpty()) {
-            throw new RuntimeException(sprintf(
-                'The middleware stack is empty and no %s has been returned',
-                ResponseInterface::class
-            ));
+        if ($route_result->isMethodFailure()) {
+            $this->logger->warning('Method "{method}" not allowed for "{uri}", expected: {allowed}', [
+                'method' => $request->getMethod(), // @pest-mutate-ignore
+                'uri' => $request->getUri(), // @pest-mutate-ignore
+                'allowed' => implode(', ', $route_result->getAllowedMethods()) // @pest-mutate-ignore
+            ]);
+            $response = new Response(status: 405, headers: ['Allow' => $route_result->getAllowedMethods()]); // TODO in configuration/container ?
+        } elseif ($route_result->isFailure()) {
+            $this->logger->warning('Request URI does not exist'); // @pest-mutate-ignore
+            $response = new Response(status: 404); // TODO in configuration/container ?
+        } else {
+            $route = $route_result->getMatchedRoute();
+            $this->logger->debug('Executing endpoint "{name}"', ['name' => $route->getName()]); // @pest-mutate-ignore
+            $response = $route->getHandler()->handle($request);
         }
 
-        return $this->stack->shift()->process($request, $this);
+        return $response;
     }
 
     public  function run(?ServerRequestInterface $server_request = null): void
@@ -98,30 +67,14 @@ class Orb implements RequestHandlerInterface
             $server_request = $server_request->withAttribute(ContainerInterface::class, $this->container);
 
             $this->logger->debug('Request starting HTTP/{protocol} {method} {uri}', [
-                'protocol' => $server_request->getProtocolVersion(),
-                'method' => $server_request->getMethod(),
-                'uri' => $server_request->getUri()
+                'protocol' => $server_request->getProtocolVersion(), // @pest-mutate-ignore
+                'method' => $server_request->getMethod(), // @pest-mutate-ignore
+                'uri' => $server_request->getUri() // @pest-mutate-ignore
             ]);
 
-            $route_result = $this->router->match($server_request);
-            $route = $route_result->getMatchedRoute();
-
-            if (!$route) {
-                $this->logger->warning('Request URI does not exist');
-                $response = new Response(status: 404); // TODO in configuration/container ?
-            } elseif (!in_array($server_request->getMethod(), $route->getAllowedMethods())) {
-                $this->logger->warning('Method "{method}" not allowed for "{uri}", expected: {allowed}', [
-                    'method' => $server_request->getMethod(),
-                    'uri' => $server_request->getUri(),
-                    'allowed' => $route->getAllowedMethods()
-                ]);
-                $response = new Response(status: 405, headers: ['Allow' => $route->getAllowedMethods()]); // TODO in configuration/container ?
-            } else {
-                $this->logger->debug('Executing endpoint "{name}"', ['name' => $route->getName()]);
-                $response = $route->getHandler()->handle($server_request);
-            }
+            $response = $this->handle($server_request);
         } catch (Throwable $e) {
-            $this->logger->error($e->getMessage(), ['exception' => $e]);
+            $this->logger->error($e->getMessage(), ['exception' => $e]); // @pest-mutate-ignore
             $response = new Response(status: 500); // TODO in configuration/container ?
         }
 

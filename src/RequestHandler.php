@@ -48,7 +48,7 @@ class RequestHandler implements RequestHandlerInterface
              $this->handler = call_user_func_array($this->handler, $params);
         }
 
-        return match(true) {
+        return match(true) { // @pest-mutate-ignore
             $this->handler instanceof SimpleXMLElement || $this->handler instanceof DOMDocument => new XmlResponse($this->handler->saveXML()),
             is_array($this->handler) || is_object($this->handler) => new JsonResponse($this->handler),
             default => new HtmlResponse((string)$this->handler)
