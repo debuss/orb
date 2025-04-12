@@ -59,7 +59,9 @@ class Orb implements RequestHandlerInterface
 
             $this->logger->debug('Executing endpoint "{name}"', ['name' => $route->getName()]); // @pest-mutate-ignore
 
-            $response = $route->getHandler()->handle($request);
+            $response = $route->getHandler()->handle(
+                $request->withAttribute('__route_matched_parameters', $route_result->getMatchedParams())
+            );
         }
 
         return $response;

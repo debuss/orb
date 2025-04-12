@@ -111,7 +111,7 @@ test('handles callable with class method syntax arrow', function () {
 
 test('handles function syntax', function () {
     $request = new ServerRequest();
-    $request = $request->withAttribute('string', 'test');
+    $request = $request->withAttribute('__route_matched_parameters', ['string' => 'test']);
 
     $handler = new RequestHandler('strlen');
 

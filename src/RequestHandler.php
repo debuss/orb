@@ -39,10 +39,7 @@ class RequestHandler implements RequestHandlerInterface
             }
         }
 
-        $params = $request
-            ->withoutAttribute(ContainerInterface::class)
-            ->withoutAttribute(RouteResultInterface::class)
-            ->getAttributes();
+        $params = $request->getAttribute('__route_matched_parameters', []);
 
         if (is_callable($this->handler)) {
              $this->handler = call_user_func_array($this->handler, $params);
