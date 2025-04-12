@@ -5,6 +5,7 @@ namespace Orb;
 use Laminas\Diactoros\Response;
 use Orb\Configuration\{Configuration, ConfigurationFactory};
 use Orb\Trait\{ContainerAwareTrait, EmitterTrait, ErrorHandlingTrait, RouterAwareTrait};
+use Laminas\Diactoros\Response\RedirectResponse;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -40,6 +41,18 @@ class Orb implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
+        // Check trailing slash before treating the request
+        $uri = $request->getUri();
+        if ($uri->getPath() != '/' && str_ends_with($uri->getPath(), '/')) {
+            $uri = $uri->withPath(rtrim($uri->getPath(), '/'));
+
+            if ($request->getMethod() == 'GET') {
+                return new RedirectResponse((string)$uri, 301);
+            }
+
+            $request = $request->withUri($uri);
+        }
+
         $route_result = $this->router->match($request);
 
         if ($route_result->isMethodFailure()) {
